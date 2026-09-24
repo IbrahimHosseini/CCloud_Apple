@@ -95,6 +95,11 @@ scripts/build.sh <ios|tvos|macos|all> <method> [--upload]
 
 Output goes to `build/<platform>/<method>/`. iPhone and iPad share one universal binary.
 
+The macOS `unsigned` DMG is ad-hoc signed and not notarized. On another Mac, macOS blocks the first
+launch until it's allowed in System Settings › Privacy & Security › Open Anyway. It's built without
+the hardened runtime, whose library validation would refuse the ad-hoc signed VLCKit framework and
+crash the app at launch. The same applies to archiving in Xcode with "Sign to Run Locally".
+
 The iOS and tvOS targets have a **Thin VLCKit** build phase (`scripts/thin-vlckit.sh`) that removes
 the 32-bit slices and embedded bitcode from VideoLAN's binaries. Bitcode alone is about 140 MB on
 tvOS, and App Store Connect rejects it.

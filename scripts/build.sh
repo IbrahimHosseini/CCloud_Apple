@@ -98,7 +98,10 @@ build_one() {
         local signing=(CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="")
         if [ "$platform" = "macos" ]; then
             # Apple silicon only runs signed code: sign ad hoc ("Sign to Run Locally").
-            signing=(CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM="")
+            # Without the hardened runtime: its library validation refuses to load the ad-hoc
+            # signed VLCKit framework (ad-hoc code has no Team ID to match), and the app
+            # crashes at launch. Signed exports keep it, as notarization requires.
+            signing=(CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM="" ENABLE_HARDENED_RUNTIME=NO)
         fi
         xcodebuild archive -quiet -project "$PROJECT" -scheme "$scheme" -configuration Release \
             -destination "$destination" -archivePath "$archive" "${signing[@]}"
