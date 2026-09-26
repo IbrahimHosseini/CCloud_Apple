@@ -1,0 +1,15 @@
+{
+  "originHash" : "6f72d8664188e736de6720e2ddfc5d1be7321bab98e64a52d2d71fa7a1ccc68e",
+  "pins" : [
+    {
+      "identity" : "vlckit-spm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tylerjonesio/vlckit-spm",
+      "state" : {
+        "revision" : "e932bbd488872fdb74f6654d28c2f291eae03daf",
+        "version" : "3.6.0"
+      }
+    }
+  ],
+  "version" : 3
+}
