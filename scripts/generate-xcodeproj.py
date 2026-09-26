@@ -29,7 +29,7 @@ COMMON_TARGET_SETTINGS = {
     "DEVELOPMENT_TEAM": TEAM,
     "ENABLE_PREVIEWS": "YES",
     "GENERATE_INFOPLIST_FILE": "YES",
-    "INFOPLIST_KEY_CFBundleDisplayName": "CCloud",
+    "INFOPLIST_KEY_CFBundleDisplayName": "CCloud TV",
     "INFOPLIST_KEY_LSApplicationCategoryType": "public.app-category.entertainment",
     "MARKETING_VERSION": MARKETING_VERSION,
     "PRODUCT_BUNDLE_IDENTIFIER": BUNDLE_ID,
