@@ -118,8 +118,15 @@ build_one() {
         return 0
     fi
 
+    # Automatic signing at archive time asks for a tvOS development profile, which needs a
+    # registered Apple TV in the developer account. For App Store builds, archive tvOS
+    # unsigned and let the export step sign it with the distribution certificate.
+    local archive_signing=(-allowProvisioningUpdates)
+    if [ "$platform" = "tvos" ] && [ "$method" = "app-store" ]; then
+        archive_signing=(CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="")
+    fi
     xcodebuild archive -quiet -project "$PROJECT" -scheme "$scheme" -configuration Release \
-        -destination "$destination" -archivePath "$archive" -allowProvisioningUpdates
+        -destination "$destination" -archivePath "$archive" "${archive_signing[@]}"
 
     local options="$out/ExportOptions.plist" destination_mode="export"
     [ "$method" = "app-store" ] && [ "$UPLOAD" = "yes" ] && destination_mode="upload"
