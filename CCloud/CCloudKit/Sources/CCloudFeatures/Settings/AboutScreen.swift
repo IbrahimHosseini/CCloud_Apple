@@ -34,7 +34,7 @@ struct AboutScreen: View {
                 Link(destination: URL(string: "https://github.com/IbrahimHosseini/CCloud_apple")!) {
                     Label(L10n.About.sourceCode, systemImage: "chevron.left.forwardslash.chevron.right")
                 }
-                Link(destination: URL(string: "https://github.com/code3-dev/CCloud")!) {
+                Link(destination: URL(string: "https://github.com/IbrahimHosseini/CCloud")!) {
                     Label(L10n.About.androidProject, systemImage: "iphone.gen3")
                 }
             }

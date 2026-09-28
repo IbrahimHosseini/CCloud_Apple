@@ -14,7 +14,7 @@
 [![TestFlight](https://img.shields.io/badge/TestFlight-Join_the_beta-0D96F6?logo=apple&logoColor=white)](https://testflight.apple.com/join/wYAZ139h)
 
 Movies and series from the CCloud catalog on **iPhone, iPad, Mac and Apple TV**, built with SwiftUI.
-It's a native port of the [CCloud Android app](https://github.com/code3-dev/CCloud): same catalog API,
+It's a native port of the [CCloud Android app](https://github.com/IbrahimHosseini/CCloud): same catalog API,
 same features, with each platform's own navigation, controls and conventions.
 
 | Platform | Navigation | Player |
