@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Builds CCloud for one platform (or all) and packages it for distribution.
 #
-#   scripts/build.sh <platform> <method> [--upload]
+#   scripts/build.sh <platform> <method> [--upload] [--no-bump]
 #
 # platform:  ios | tvos | macos | all
 # method:
@@ -15,6 +15,9 @@
 #                 Needs NOTARY_PROFILE, a keychain profile made once with:
 #                   xcrun notarytool store-credentials <name> --apple-id … --team-id 987RHGW4P4
 #
+# Every archive is followed by scripts/bump-build-number.sh, so the next build gets a
+# fresh build number (TestFlight refuses a repeated one). Pass --no-bump to skip that.
+#
 # Signed methods use automatic signing with the team in the project and may create
 # provisioning profiles in your account (-allowProvisioningUpdates).
 # Everything lands in build/<platform>/<method>/.
@@ -25,7 +28,7 @@ PROJECT="$ROOT/CCloud/CCloud.xcodeproj"
 TEAM_ID="987RHGW4P4"
 
 usage() {
-    sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'
     exit 1
 }
 
@@ -33,7 +36,14 @@ usage() {
 PLATFORM="$1"
 METHOD="$2"
 UPLOAD="no"
-[ "${3:-}" = "--upload" ] && UPLOAD="yes"
+BUMP="yes"
+for flag in "${@:3}"; do
+    case "$flag" in
+        --upload) UPLOAD="yes" ;;
+        --no-bump) BUMP="no" ;;
+        *) usage ;;
+    esac
+done
 [ "$METHOD" = "sideload" ] && METHOD="unsigned"
 
 scheme_for() {
@@ -71,6 +81,11 @@ check_supported() {
     esac
 }
 
+bump_build_number() {
+    [ "$BUMP" = "yes" ] || return 0
+    echo "==> Next build number: $("$ROOT/scripts/bump-build-number.sh")"
+}
+
 make_dmg() {
     local app="$1" dmg="$2" staging
     staging="$(mktemp -d)"
@@ -105,6 +120,7 @@ build_one() {
         fi
         xcodebuild archive -quiet -project "$PROJECT" -scheme "$scheme" -configuration Release \
             -destination "$destination" -archivePath "$archive" "${signing[@]}"
+        bump_build_number
 
         local app="$archive/Products/Applications/CCloud.app"
         if [ "$platform" = "macos" ]; then
@@ -118,8 +134,16 @@ build_one() {
         return 0
     fi
 
+    # Automatic signing at archive time asks for a tvOS development profile, which needs a
+    # registered Apple TV in the developer account. For App Store builds, archive tvOS
+    # unsigned and let the export step sign it with the distribution certificate.
+    local archive_signing=(-allowProvisioningUpdates)
+    if [ "$platform" = "tvos" ] && [ "$method" = "app-store" ]; then
+        archive_signing=(CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="")
+    fi
     xcodebuild archive -quiet -project "$PROJECT" -scheme "$scheme" -configuration Release \
-        -destination "$destination" -archivePath "$archive" -allowProvisioningUpdates
+        -destination "$destination" -archivePath "$archive" "${archive_signing[@]}"
+    bump_build_number
 
     local options="$out/ExportOptions.plist" destination_mode="export"
     [ "$method" = "app-store" ] && [ "$UPLOAD" = "yes" ] && destination_mode="upload"
@@ -138,10 +162,14 @@ build_one() {
     <string>$destination_mode</string>
     <key>stripSwiftSymbols</key>
     <true/>
+    <key>manageAppVersionAndBuildNumber</key>
+    <false/>
 </dict>
 </plist>
 EOF
 
+    # Xcode would otherwise renumber the build itself at export (to one above App Store
+    # Connect's latest), and the .ipa would no longer match the project's build number.
     echo "==> Exporting ($(export_method "$method"), $destination_mode)"
     xcodebuild -exportArchive -archivePath "$archive" -exportPath "$out" \
         -exportOptionsPlist "$options" -allowProvisioningUpdates
