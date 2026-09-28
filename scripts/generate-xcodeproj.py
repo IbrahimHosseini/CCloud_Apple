@@ -18,7 +18,7 @@ XCODEPROJ = os.path.join(PROJECT_DIR, "CCloud.xcodeproj")
 TEAM = "987RHGW4P4"
 BUNDLE_ID = "app.thepixelforge.CCloud"
 MARKETING_VERSION = "1.0"
-BUILD_NUMBER = "2"
+BUILD_NUMBER = "4"
 PACKAGE_PRODUCT = "CCloudComposition"
 PACKAGE_TESTS = ["CCloudDomainTests", "CCloudDataTests", "CCloudPresentationTests"]
 
@@ -30,6 +30,7 @@ COMMON_TARGET_SETTINGS = {
     "ENABLE_PREVIEWS": "YES",
     "GENERATE_INFOPLIST_FILE": "YES",
     "INFOPLIST_KEY_CFBundleDisplayName": "CCloud TV",
+    "INFOPLIST_KEY_ITSAppUsesNonExemptEncryption": "NO",
     "INFOPLIST_KEY_LSApplicationCategoryType": "public.app-category.entertainment",
     "MARKETING_VERSION": MARKETING_VERSION,
     "PRODUCT_BUNDLE_IDENTIFIER": BUNDLE_ID,
