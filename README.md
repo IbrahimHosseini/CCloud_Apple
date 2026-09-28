@@ -1,5 +1,18 @@
 # CCloud for Apple platforms
 
+![Swift 6](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)
+![SwiftUI](https://img.shields.io/badge/SwiftUI-0D96F6?logo=swift&logoColor=white)
+![Xcode 27](https://img.shields.io/badge/Xcode-27-147EFB?logo=xcode&logoColor=white)
+![iOS 18+](https://img.shields.io/badge/iOS-18%2B-000000?logo=apple&logoColor=white)
+![iPadOS 18+](https://img.shields.io/badge/iPadOS-18%2B-000000?logo=apple&logoColor=white)
+![tvOS 18+](https://img.shields.io/badge/tvOS-18%2B-000000?logo=apple&logoColor=white)
+![macOS 15+](https://img.shields.io/badge/macOS-15%2B-000000?logo=apple&logoColor=white)
+![Swift Package Manager](https://img.shields.io/badge/Swift_Package_Manager-F05138?logo=swift&logoColor=white)
+![AVPlayer + VLCKit](https://img.shields.io/badge/Player-AVPlayer_%2B_VLCKit-FF8800?logo=vlcmediaplayer&logoColor=white)
+![Clean Architecture + MVVM](https://img.shields.io/badge/Architecture-Clean_%2B_MVVM-4c1)
+![English + Persian](https://img.shields.io/badge/UI-English_%2B_Persian_(RTL)-blue)
+[![TestFlight](https://img.shields.io/badge/TestFlight-Join_the_beta-0D96F6?logo=apple&logoColor=white)](https://testflight.apple.com/join/wYAZ139h)
+
 Movies and series from the CCloud catalog on **iPhone, iPad, Mac and Apple TV**, built with SwiftUI.
 It's a native port of the [CCloud Android app](https://github.com/code3-dev/CCloud): same catalog API,
 same features, with each platform's own navigation, controls and conventions.
@@ -13,6 +26,20 @@ same features, with each platform's own navigation, controls and conventions.
 
 All icons are SF Symbols. The UI is in **English and Persian** (right-to-left), following the
 device language, or iOS's per-app language setting.
+
+## Download
+
+Try the beta on **iPhone, iPad and Apple TV** through TestFlight:
+
+**[Join the TestFlight beta](https://testflight.apple.com/join/wYAZ139h)**
+
+| Platform | How to install |
+| --- | --- |
+| iPhone and iPad | Install [TestFlight](https://apps.apple.com/app/testflight/id899247664), open the link above on the device and tap Accept, then Install. |
+| Apple TV | Install TestFlight from the tvOS App Store and sign in with the Apple ID you joined with. CCloud TV then appears in TestFlight on the Apple TV. |
+
+The Mac app isn't on TestFlight. Build it from source, or use `scripts/build.sh macos unsigned`
+(see [Building for distribution](#building-for-distribution)).
 
 ## Features
 
@@ -82,7 +109,7 @@ Each platform has its own scheme, so you can archive from Xcode (Product › Arc
 `scripts/build.sh` does it from the command line and packages the result:
 
 ```bash
-scripts/build.sh <ios|tvos|macos|all> <method> [--upload]
+scripts/build.sh <ios|tvos|macos|all> <method> [--upload] [--no-bump]
 ```
 
 | Method | iOS / iPadOS | tvOS | macOS |
@@ -94,6 +121,17 @@ scripts/build.sh <ios|tvos|macos|all> <method> [--upload]
 | `developer-id` | — | — | Developer ID signed, notarized, stapled `.dmg` (needs `NOTARY_PROFILE`) |
 
 Output goes to `build/<platform>/<method>/`. iPhone and iPad share one universal binary.
+
+**Build numbers.** TestFlight refuses a build number it has already seen, so every archive is
+followed by `scripts/bump-build-number.sh`, which raises the build number of all targets by one
+(in the Xcode project and in `scripts/generate-xcodeproj.py`). The archive uses the current number
+and the next build gets the next one. Commit the change afterwards. Pass `--no-bump` to skip it, or
+run the script by hand (`scripts/bump-build-number.sh 12` sets a number). Xcode's own renumbering at
+export is turned off, so the `.ipa` always carries the project's number.
+
+**tvOS and App Store builds.** The `app-store` method archives tvOS unsigned and signs it when
+exporting, because a signed archive asks for a tvOS development profile, which needs an Apple TV
+registered in the developer account.
 
 The macOS `unsigned` DMG is ad-hoc signed and not notarized. On another Mac, macOS blocks the first
 launch until it's allowed in System Settings › Privacy & Security › Open Anyway. It's built without
@@ -139,8 +177,9 @@ python3 scripts/generate-xcodeproj.py
 - **Network security**: `NSAllowsArbitraryLoads` is on, like the Android app's network config,
   because artwork and video hosts aren't all known in advance. App Review asks for a
   justification; narrow it to specific domains if you can.
-- **Export compliance**: the app only uses standard HTTPS. If that applies to your build, add
-  `ITSAppUsesNonExemptEncryption = NO` to the Info.plists to skip the question on every upload.
+- **Export compliance**: every target sets `ITSAppUsesNonExemptEncryption = NO` (the app only
+  uses standard HTTPS), so TestFlight and App Store Connect skip the encryption question on each
+  upload. This is a legal declaration, so change it if your build uses other encryption.
 - **App Review**: apps that stream third-party video are reviewed strictly (guideline 5.2).
   Sideloading, Ad Hoc and Developer ID don't go through App Review.
 - **Titles in Persian script are hidden**, as in the Android app (`TitleContentPolicy`).

@@ -25,7 +25,8 @@ xcodebuild build -project CCloud/CCloud.xcodeproj -scheme CCloud-macOS -destinat
 cd CCloud/CCloudKit && xcodebuild build -scheme CCloudKit -destination 'generic/platform=tvOS' CODE_SIGNING_ALLOWED=NO
 
 # Distribution builds, written to build/<platform>/<method>/
-scripts/build.sh <ios|tvos|macos|all> <unsigned|development|ad-hoc|app-store|developer-id> [--upload]
+scripts/build.sh <ios|tvos|macos|all> <unsigned|development|ad-hoc|app-store|developer-id> [--upload] [--no-bump]
+scripts/bump-build-number.sh [n]          # +1 on every target's build number, or set it to n
 
 # Generated files: re-run after changing targets/build settings or strings
 python3 scripts/generate-xcodeproj.py     # CCloud/CCloud.xcodeproj and its shared schemes
@@ -33,6 +34,10 @@ python3 scripts/build-string-catalog.py   # CCloudDesignSystem/Resources/Localiz
 ```
 
 Simulator device names repeat across installed runtimes, so `-destination 'name=…'` can fail as ambiguous; use `id=<udid>` from `xcrun simctl list devices`.
+
+`build.sh` runs `bump-build-number.sh` after every archive (the archive uses the current number, the next build gets the next one) and disables Xcode's `manageAppVersionAndBuildNumber` at export so the `.ipa` keeps the project's number. That leaves the working tree dirty after a build; commit it. The number lives in `CURRENT_PROJECT_VERSION` in the pbxproj and `BUILD_NUMBER` in `generate-xcodeproj.py`, and the script edits both. For `tvos app-store` it archives unsigned and signs at export, since a signed archive needs a tvOS development profile and the team has no Apple TV registered.
+
+The public TestFlight beta (iOS, iPadOS, tvOS) is `https://testflight.apple.com/join/wYAZ139h`. Every target sets `ITSAppUsesNonExemptEncryption = NO`, so uploads skip the export compliance prompt.
 
 ## Architecture
 
