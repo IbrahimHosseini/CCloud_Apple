@@ -55,6 +55,9 @@ struct MediaDetailScreen: View {
                 .padding(.horizontal, Metrics.screenPadding)
             }
             .padding(.bottom, Metrics.sectionSpacing)
+            // Pin the column to the scroll view's width, so one view that can't shrink doesn't
+            // widen the header and every section past the screen.
+            .containerRelativeFrame(.horizontal, alignment: .leading)
         }
         #if os(tvOS)
         .background { TVBackdrop(item: item) }
