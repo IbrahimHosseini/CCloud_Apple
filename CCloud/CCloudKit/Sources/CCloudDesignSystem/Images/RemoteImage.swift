@@ -5,14 +5,28 @@ import SwiftUI
 public struct RemoteImage<Placeholder: View>: View {
     private let url: URL?
     private let contentMode: ContentMode
+    private let alignment: Alignment
+    private let decodeSide: CGFloat?
     private let placeholder: Placeholder
 
     @State private var loaded: LoadedImage?
     @Environment(\.displayScale) private var displayScale
 
-    public init(url: URL?, contentMode: ContentMode = .fill, @ViewBuilder placeholder: () -> Placeholder) {
+    /// - Parameters:
+    ///   - alignment: Which part of the image stays visible when `.fill` crops it.
+    ///   - decodeSide: Decode the image for this longer side instead of the view's size, so
+    ///     an image whose frame animates (a stretching header) isn't decoded again at every size.
+    public init(
+        url: URL?,
+        contentMode: ContentMode = .fill,
+        alignment: Alignment = .center,
+        decodeSide: CGFloat? = nil,
+        @ViewBuilder placeholder: () -> Placeholder
+    ) {
         self.url = url
         self.contentMode = contentMode
+        self.alignment = alignment
+        self.decodeSide = decodeSide
         self.placeholder = placeholder()
     }
 
@@ -25,15 +39,21 @@ public struct RemoteImage<Placeholder: View>: View {
                     Image(decorative: loaded.image.cgImage, scale: displayScale)
                         .resizable()
                         .aspectRatio(contentMode: contentMode)
-                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        .frame(width: proxy.size.width, height: proxy.size.height, alignment: alignment)
                         .transition(.opacity)
                 }
             }
             .clipped()
-            .task(id: TaskKey(url: url, size: proxy.size)) {
+            .task(id: TaskKey(url: url, size: taskSize(for: proxy.size))) {
                 await load(size: proxy.size)
             }
         }
+    }
+
+    /// What re-runs the load. A fixed `decodeSide` ignores resizes, once there is a size at all.
+    private func taskSize(for size: CGSize) -> CGSize {
+        guard let decodeSide, size.width > 0, size.height > 0 else { return size }
+        return CGSize(width: decodeSide, height: decodeSide)
     }
 
     private func load(size: CGSize) async {
@@ -41,7 +61,7 @@ public struct RemoteImage<Placeholder: View>: View {
             loaded = nil
             return
         }
-        let maxPixelSize = Int((max(size.width, size.height) * displayScale).rounded(.up))
+        let maxPixelSize = Int(((decodeSide ?? max(size.width, size.height)) * displayScale).rounded(.up))
         guard let image = await ImagePipeline.shared.image(at: url, maxPixelSize: maxPixelSize),
               !Task.isCancelled
         else { return }
