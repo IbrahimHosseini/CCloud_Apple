@@ -58,9 +58,12 @@ struct MediaDetailScreen: View {
                 .padding(.horizontal, Metrics.screenPadding)
             }
             .padding(.bottom, Metrics.sectionSpacing)
-            // Pin the column to the scroll view's width, so one view that can't shrink doesn't
-            // widen the header and every section past the screen.
-            .containerRelativeFrame(.horizontal, alignment: .leading)
+            // Take exactly the width the scroll view offers, so one view that can't shrink only
+            // overflows itself instead of widening the header and every section past the screen.
+            // Not containerRelativeFrame: on the Mac the split view sizes its detail column from
+            // the content, and a column that follows its container's width made the two resize
+            // each other without end, so the page shook.
+            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
         }
         #if os(tvOS)
         .background { TVBackdrop(item: item) }
