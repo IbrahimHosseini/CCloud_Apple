@@ -75,12 +75,19 @@ struct EpisodesSection: View {
                 }
             }
             .labelsHidden()
-            .fixedSize()
-            // A few seasons fit a segmented control; more go in a menu.
-            if seasons.count <= 4 {
-                picker.pickerStyle(.segmented)
-            } else {
-                picker.pickerStyle(.menu)
+            // A few seasons with short titles fit a segmented control; otherwise a menu. The
+            // server sometimes returns one "season" per quality ("فصل اول 720 زیرنویس"), and a
+            // segmented control that can't fit would widen the whole page past the screen.
+            ViewThatFits(in: .horizontal) {
+                if seasons.count <= 4 {
+                    picker
+                        .pickerStyle(.segmented)
+                        .fixedSize()
+                }
+                picker
+                    .pickerStyle(.menu)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         #endif

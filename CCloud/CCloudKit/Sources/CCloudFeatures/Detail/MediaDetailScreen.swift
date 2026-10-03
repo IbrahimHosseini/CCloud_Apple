@@ -9,6 +9,9 @@ struct MediaDetailScreen: View {
     @State private var isChoosingPlaylists = false
     @State private var qualityChoice: QualityChoice?
     @State private var missingApp: String?
+    /// How far the page is pulled down past its top, and the bars above it. Only iOS sets them.
+    @State private var stretch: CGFloat = 0
+    @State private var topInset: CGFloat = 0
 
     @Environment(\.openURL) private var openURL
     #if os(iOS)
@@ -29,7 +32,7 @@ struct MediaDetailScreen: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.sectionSpacing) {
-                DetailHeader(item: item, isWide: isWide) {
+                DetailHeader(item: item, isWide: isWide, stretch: stretch, topInset: topInset) {
                     actionButtons
                 }
 
@@ -55,15 +58,24 @@ struct MediaDetailScreen: View {
                 .padding(.horizontal, Metrics.screenPadding)
             }
             .padding(.bottom, Metrics.sectionSpacing)
+            // Pin the column to the scroll view's width, so one view that can't shrink doesn't
+            // widen the header and every section past the screen.
+            .containerRelativeFrame(.horizontal, alignment: .leading)
         }
         #if os(tvOS)
         .background { TVBackdrop(item: item) }
         #endif
         #if os(iOS)
+        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.top } action: { topInset = $0 }
         .onScrollGeometryChange(for: Bool.self) { geometry in
-            geometry.contentOffset.y + geometry.contentInsets.top > (isWide ? 320 : 250)
+            geometry.contentOffset.y + geometry.contentInsets.top > DetailBackdrop.height(isWide: isWide) - 150
         } action: { _, isPastHeader in
             withAnimation(.easeInOut(duration: 0.2)) { isTitleVisible = isPastHeader }
+        }
+        .onScrollGeometryChange(for: CGFloat.self) { geometry in
+            min(max(-(geometry.contentOffset.y + geometry.contentInsets.top), 0), DetailBackdrop.maxStretch)
+        } action: { _, pull in
+            stretch = pull
         }
         #endif
         #if !os(tvOS)
