@@ -87,7 +87,8 @@ struct EpisodesSection: View {
                 picker
                     .pickerStyle(.menu)
                     .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    // A Persian season name sits at the right edge.
+                    .naturalDirection(of: viewModel.selectedSeason.map(seasonTitle) ?? "")
             }
         }
         #endif
@@ -215,6 +216,8 @@ private struct EpisodeRow<Menu: View>: View {
                         .appFont(.caption)
                         .foregroundStyle(.secondary)
                     }
+                    // A Persian title and its facts sit at the right edge of the column.
+                    .naturalDirection(of: episodeTitle(episode))
                     Spacer(minLength: 0)
                 }
                 .contentShape(Rectangle())
@@ -276,6 +279,7 @@ private struct EpisodeCard: View {
                 }
             }
             .frame(width: 400, alignment: .leading)
+            .environment(\.layoutDirection, episodeTitle(episode).naturalLayoutDirection)
         }
     }
 }

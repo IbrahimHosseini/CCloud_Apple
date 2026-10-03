@@ -146,6 +146,7 @@ private struct MetadataLine: View {
                 HStack(spacing: 4) {
                     Text(L10n.Detail.imdb)
                         .appFont(.caption, weight: .heavy)
+                        .centeredLabel(.caption)
                         .padding(.horizontal, 4)
                         .padding(.vertical, 1)
                         .background(Palette.imdbYellow, in: RoundedRectangle(cornerRadius: 3))

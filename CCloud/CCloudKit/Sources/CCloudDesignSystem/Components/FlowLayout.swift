@@ -18,13 +18,16 @@ public struct FlowLayout: Layout {
     }
 
     public func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let isRightToLeft = subviews.layoutDirection == .rightToLeft
         var y = bounds.minY
         for row in rows(for: subviews, maxWidth: bounds.width) {
-            var x = bounds.minX
+            // How far along the row's start edge (the right one when reading right to left).
+            var offset: CGFloat = 0
             for index in row.indices {
                 let size = subviews[index].sizeThatFits(.unspecified)
+                let x = isRightToLeft ? bounds.maxX - offset - size.width : bounds.minX + offset
                 subviews[index].place(at: CGPoint(x: x, y: y + (row.height - size.height) / 2), proposal: ProposedViewSize(size))
-                x += size.width + spacing
+                offset += size.width + spacing
             }
             y += row.height + rowSpacing
         }
@@ -74,6 +77,7 @@ public struct Chip: View {
                     .imageScale(.small)
             }
             Text(title)
+                .centeredLabel(.subheadline)
         }
         .appFont(.subheadline, weight: .medium)
         .padding(.horizontal, 12)
