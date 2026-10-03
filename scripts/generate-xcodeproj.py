@@ -18,7 +18,7 @@ XCODEPROJ = os.path.join(PROJECT_DIR, "CCloud.xcodeproj")
 TEAM = "987RHGW4P4"
 BUNDLE_ID = "app.thepixelforge.CCloud"
 MARKETING_VERSION = "1.0"
-BUILD_NUMBER = "4"
+BUILD_NUMBER = "7"
 PACKAGE_PRODUCT = "CCloudComposition"
 PACKAGE_TESTS = ["CCloudDomainTests", "CCloudDataTests", "CCloudPresentationTests"]
 

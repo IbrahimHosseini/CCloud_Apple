@@ -175,8 +175,13 @@ private struct PlaylistChips: View {
         return Button {
             viewModel.select(id)
         } label: {
-            Label(title, systemImage: systemImage)
-                .appFont(.subheadline, weight: .semibold)
+            Label {
+                Text(title)
+                    .centeredLabel(.subheadline)
+            } icon: {
+                Image(systemName: systemImage)
+            }
+            .appFont(.subheadline, weight: .semibold)
                 #if !os(tvOS)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)

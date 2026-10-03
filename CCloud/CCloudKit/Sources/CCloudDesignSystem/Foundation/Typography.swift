@@ -20,6 +20,33 @@ public extension View {
     }
 }
 
+public extension View {
+    /// Centers a pill's, button's or badge's text vertically when Vazirmatn is the font.
+    ///
+    /// Vazirmatn reserves far more room above the baseline than below it (to fit Persian
+    /// marks), so Latin text sits about a tenth of its size above the middle of its line box,
+    /// and above the middle of the control it is in. This moves the drawing down, without
+    /// changing the layout, so the control keeps its size. Apply it to the label's `Text`,
+    /// not to the icon beside it. `style` is the text style of the label; it does nothing in
+    /// the system font.
+    func centeredLabel(_ style: Font.TextStyle = .body) -> some View {
+        modifier(CenteredLabelModifier(style: style))
+    }
+}
+
+private struct CenteredLabelModifier: ViewModifier {
+    @Environment(\.fontChoice) private var choice
+    @ScaledMetric private var size: CGFloat
+
+    init(style: Font.TextStyle) {
+        _size = ScaledMetric(wrappedValue: style.basePointSize, relativeTo: style)
+    }
+
+    func body(content: Content) -> some View {
+        content.offset(y: choice == .vazirmatn ? size * 0.1 : 0)
+    }
+}
+
 private struct AppFontModifier: ViewModifier {
     let style: Font.TextStyle
     let weight: Font.Weight?

@@ -122,6 +122,7 @@ public struct RatingBadge: View {
                 .foregroundStyle(Palette.imdbYellow)
             Text(rating, format: .number.precision(.fractionLength(1)))
                 .monospacedDigit()
+                .centeredLabel(.caption2)
         }
         .appFont(.caption2, weight: .bold)
         .foregroundStyle(.white)

@@ -45,7 +45,7 @@ private struct LanguageSection: View {
     @Environment(\.openURL) private var openURL
 
     var body: some View {
-        Section {
+        SettingsSection(footer: L10n.Settings.languageFooter) {
             Button {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     openURL(url)
@@ -56,8 +56,6 @@ private struct LanguageSection: View {
                 }
             }
             .foregroundStyle(.primary)
-        } footer: {
-            Text(L10n.Settings.languageFooter)
         }
     }
 }

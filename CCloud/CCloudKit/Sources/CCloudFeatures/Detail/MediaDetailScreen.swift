@@ -58,9 +58,12 @@ struct MediaDetailScreen: View {
                 .padding(.horizontal, Metrics.screenPadding)
             }
             .padding(.bottom, Metrics.sectionSpacing)
-            // Pin the column to the scroll view's width, so one view that can't shrink doesn't
-            // widen the header and every section past the screen.
-            .containerRelativeFrame(.horizontal, alignment: .leading)
+            // Take exactly the width the scroll view offers, so one view that can't shrink only
+            // overflows itself instead of widening the header and every section past the screen.
+            // Not containerRelativeFrame: on the Mac the split view sizes its detail column from
+            // the content, and a column that follows its container's width made the two resize
+            // each other without end, so the page shook.
+            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
         }
         #if os(tvOS)
         .background { TVBackdrop(item: item) }
@@ -140,21 +143,27 @@ struct MediaDetailScreen: View {
                             Button(L10n.Detail.playQuality(source.quality)) { viewModel.play(source) }
                         }
                     } label: {
-                        Label(L10n.Detail.play, systemImage: "play.fill")
+                        ActionLabel(L10n.Detail.play, systemImage: "play.fill")
                     } primaryAction: {
                         viewModel.play(preferred)
                     }
                     .adaptiveProminentButtonStyle()
                     .fixedSize()
                 } else {
-                    Button(L10n.Detail.play, systemImage: "play.fill") { viewModel.play(preferred) }
-                        .adaptiveProminentButtonStyle()
+                    Button {
+                        viewModel.play(preferred)
+                    } label: {
+                        ActionLabel(L10n.Detail.play, systemImage: "play.fill")
+                    }
+                    .adaptiveProminentButtonStyle()
                 }
             }
         case .series:
             if let next = viewModel.nextEpisode {
-                Button(L10n.Detail.playEpisode(season: next.season.number, episode: next.episode.number), systemImage: "play.fill") {
+                Button {
                     playOrChoose(next.episode, in: next.season)
+                } label: {
+                    ActionLabel(L10n.Detail.playEpisode(season: next.season.number, episode: next.episode.number), systemImage: "play.fill")
                 }
                 .adaptiveProminentButtonStyle()
             }
@@ -162,8 +171,10 @@ struct MediaDetailScreen: View {
         #if os(tvOS)
         favoriteButton
             .buttonStyle(.bordered)
-        Button(L10n.Detail.addToPlaylist, systemImage: "text.badge.plus") {
+        Button {
             isChoosingPlaylists = true
+        } label: {
+            ActionLabel(L10n.Detail.addToPlaylist, systemImage: "text.badge.plus")
         }
         .buttonStyle(.bordered)
         #endif
@@ -206,6 +217,8 @@ struct MediaDetailScreen: View {
                         Chip(genre.title)
                     }
                 }
+                // Persian genres start at the right edge, like the overview above.
+                .naturalDirection(of: item.genres.map(\.title).joined(separator: " "))
             }
         }
         if !item.countries.isEmpty {
@@ -222,6 +235,7 @@ struct MediaDetailScreen: View {
                         #endif
                     }
                 }
+                .naturalDirection(of: item.countries.map(\.title).joined(separator: " "))
             }
         }
     }
@@ -242,6 +256,26 @@ struct MediaDetailScreen: View {
 
     private var isShowingMissingApp: Binding<Bool> {
         Binding { missingApp != nil } set: { if !$0 { missingApp = nil } }
+    }
+}
+
+/// A button's icon and title, with the title centered against the icon and the button.
+private struct ActionLabel: View {
+    private let title: String
+    private let systemImage: String
+
+    init(_ title: String, systemImage: String) {
+        self.title = title
+        self.systemImage = systemImage
+    }
+
+    var body: some View {
+        Label {
+            Text(title)
+                .centeredLabel()
+        } icon: {
+            Image(systemName: systemImage)
+        }
     }
 }
 
