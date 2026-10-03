@@ -5,11 +5,44 @@ import SwiftUI
 
 // Settings sections shared by the iPhone/iPad/Apple TV Settings tab and the Mac Settings window.
 
+/// A `Section` whose title and footer are styled explicitly. The app sets one font on the whole
+/// window, which would otherwise make a section's title and its footer the same size and color.
+struct SettingsSection<Content: View>: View {
+    private let title: String?
+    private let footer: String?
+    private let content: Content
+
+    init(_ title: String? = nil, footer: String? = nil, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.footer = footer
+        self.content = content()
+    }
+
+    var body: some View {
+        Section {
+            content
+        } header: {
+            if let title {
+                Text(title)
+                    .appFont(.subheadline, weight: .semibold)
+                    .foregroundStyle(.primary)
+                    .textCase(nil)
+            }
+        } footer: {
+            if let footer {
+                Text(footer)
+                    .appFont(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
 struct AppearanceSection: View {
     @Bindable var viewModel: SettingsViewModel
 
     var body: some View {
-        Section(L10n.Settings.appearance) {
+        SettingsSection(L10n.Settings.appearance) {
             Picker(L10n.Settings.theme, selection: $viewModel.appearance) {
                 ForEach(Appearance.allCases, id: \.self) { appearance in
                     Text(L10n.Settings.appearance(appearance)).tag(appearance)
@@ -53,7 +86,7 @@ struct PlayerSection: View {
     @Bindable var viewModel: SettingsViewModel
 
     var body: some View {
-        Section {
+        SettingsSection(L10n.Settings.player, footer: L10n.Settings.seekIntervalFooter) {
             #if os(tvOS)
             Picker(L10n.Settings.seekInterval, selection: $viewModel.seekInterval) {
                 ForEach([5, 10, 15, 20, 25, 30], id: \.self) { seconds in
@@ -65,10 +98,6 @@ struct PlayerSection: View {
                 LabeledContent(L10n.Settings.seekInterval, value: L10n.Settings.seconds(viewModel.seekInterval))
             }
             #endif
-        } header: {
-            Text(L10n.Settings.player)
-        } footer: {
-            Text(L10n.Settings.seekIntervalFooter)
         }
     }
 }
@@ -77,7 +106,7 @@ struct SubtitlesSection: View {
     @Bindable var viewModel: SettingsViewModel
 
     var body: some View {
-        Section(L10n.Settings.subtitles) {
+        SettingsSection(L10n.Settings.subtitles) {
             SubtitlePreview(style: viewModel.settings.subtitles)
                 #if os(tvOS)
                 .frame(maxWidth: 640)
@@ -151,7 +180,7 @@ struct StorageSection: View {
     @State private var isConfirmingClear = false
 
     var body: some View {
-        Section(L10n.Settings.storage) {
+        SettingsSection(L10n.Settings.storage) {
             LabeledContent(L10n.Settings.watchedEpisodes) {
                 Text(summary)
                     .monospacedDigit()
